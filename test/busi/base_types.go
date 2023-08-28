@@ -22,10 +22,11 @@ var StoreHost = "localhost"
 
 // BusiConf 1
 var BusiConf = dtmcli.DBConf{
-	Driver: "mysql",
-	Host:   StoreHost,
-	Port:   3306,
-	User:   "root",
+	Driver:   "mysql",
+	Host:     StoreHost,
+	Port:     3307,
+	User:     "root",
+	Password: "123456",
 }
 
 // UserAccount 1

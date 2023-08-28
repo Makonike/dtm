@@ -9,6 +9,8 @@ package dtmsvr
 import (
 	"context"
 	"fmt"
+	"github.com/asoul-fanclub/jaeger-middleware/middleware"
+	"go.opentelemetry.io/otel"
 	"net"
 	"time"
 
@@ -42,6 +44,21 @@ func StartSvr() *gin.Engine {
 		defer cancel()
 		return invoker(ctx2, method, req, reply, cc, opts...)
 	})
+	dtmdriver.Middlewares.Grpc = append(dtmdriver.Middlewares.Grpc, middleware.NewJaegerClientMiddleware().UnaryClientInterceptor)
+	tp, _ := middleware.TracerProvider("http://localhost:14268/api/traces", false)
+	otel.SetTracerProvider(tp)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Cleanly shutdown and flush telemetry when the application exits.
+	defer func(ctx context.Context) {
+		// Do not make the application hang when it is shutdown.
+		ctx, cancel = context.WithTimeout(ctx, time.Second*5)
+		defer cancel()
+		if err := tp.Shutdown(ctx); err != nil {
+			fmt.Println("failed to shutdown TracerProvider: ", err)
+		}
+	}(ctx)
 
 	// start gin server
 	app := dtmutil.GetGinApp()
@@ -59,7 +76,7 @@ func StartSvr() *gin.Engine {
 	// start grpc server
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", conf.GrpcPort))
 	logger.FatalIfError(err)
-	s := grpc.NewServer(grpc.ChainUnaryInterceptor(grpcRecover, grpcMetrics, dtmgimp.GrpcServerLog))
+	s := grpc.NewServer(grpc.ChainUnaryInterceptor(grpcRecover, grpcMetrics, dtmgimp.GrpcServerLog, middleware.NewJaegerServerMiddleware().UnaryInterceptor))
 	dtmgpb.RegisterDtmServer(s, &dtmServer{})
 	reflection.Register(s)
 	logger.Infof("grpc listening at %v", lis.Addr())

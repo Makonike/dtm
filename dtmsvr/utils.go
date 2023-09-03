@@ -92,6 +92,10 @@ func (e *timerCtx) String() string {
 	return ""
 }
 
+func (e *cancelCtx) String() string {
+	return ""
+}
+
 // CopyContext copy context with value and grpc metadata
 // if raw context is nil, return nil
 func CopyContext(ctx context.Context) context.Context {

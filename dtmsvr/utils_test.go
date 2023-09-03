@@ -48,15 +48,21 @@ func TestCopyContext(t *testing.T) {
 
 func TestCopyContextRecursive(t *testing.T) {
 	var key testContextType = "key"
+	var key2 testContextType = "key2"
 	var value testContextType = "value"
+	var value2 testContextType = "value2"
 	var nestedKey testContextType = "nested_key"
 	var nestedValue testContextType = "nested_value"
 	ctxWithValue := context.WithValue(context.Background(), key, value)
 	nestedCtx := context.WithValue(ctxWithValue, nestedKey, nestedValue)
-	newCtx := CopyContext(nestedCtx)
+	timer, cancel := context.WithCancel(nestedCtx)
+	defer cancel()
+	context.WithValue(timer, key2, value2)
+	newCtx := CopyContext(timer)
 
-	assert.Equal(t, nestedCtx.Value(nestedKey), newCtx.Value(nestedKey))
-	assert.Equal(t, nestedCtx.Value(key), newCtx.Value(key))
+	assert.Equal(t, timer.Value(nestedKey), newCtx.Value(nestedKey))
+	assert.Equal(t, timer.Value(key), newCtx.Value(key))
+	assert.Equal(t, timer.Value(key2), newCtx.Value(key2))
 }
 
 func TestCopyContextWithMetadata(t *testing.T) {

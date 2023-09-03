@@ -18,7 +18,6 @@ import (
 	"github.com/dtm-labs/dtm/dtmsvr/storage"
 	"github.com/dtm-labs/dtm/dtmsvr/storage/registry"
 	"github.com/lithammer/shortuuid/v3"
-	"google.golang.org/grpc/metadata"
 )
 
 type branchStatus struct {
@@ -108,21 +107,11 @@ func CopyContext(ctx context.Context) context.Context {
 	for k, v := range kv {
 		newCtx = context.WithValue(newCtx, k, v)
 	}
-	if md, ok := metadata.FromIncomingContext(ctx); ok {
-		newCtx = metadata.NewIncomingContext(newCtx, md)
-	}
-	if md, ok := metadata.FromOutgoingContext(ctx); ok {
-		newCtx = metadata.NewOutgoingContext(newCtx, md)
-	}
 	return newCtx
 }
 
 func getKeyValues(ctx context.Context, kv map[interface{}]interface{}) {
-	rawRtType := reflect.TypeOf(ctx)
-	if rawRtType == nil {
-		return
-	}
-	rtType := rawRtType.String()
+	rtType := reflect.TypeOf(ctx).String()
 	if rtType == "*context.emptyCtx" {
 		return
 	}

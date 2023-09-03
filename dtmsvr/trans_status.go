@@ -194,7 +194,7 @@ func (t *TransGlobal) getJSONRPCResult(uri string, branchID, op string, branchPa
 }
 
 func (t *TransGlobal) getGrpcResult(ctx context.Context, uri string, branchID, op string, branchPayload []byte) error {
-	// grpc handler
+	// grpc  handler
 	server, method, err := dtmdriver.GetDriver().ParseServerMethod(uri)
 	if err != nil {
 		return err

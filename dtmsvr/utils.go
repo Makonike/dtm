@@ -114,6 +114,9 @@ func CopyContext(ctx context.Context) context.Context {
 }
 
 func getKeyValues(ctx context.Context, kv map[interface{}]interface{}) {
+	if ctx == nil {
+		return
+	}
 	rtType := reflect.TypeOf(ctx).String()
 	if rtType == "*context.emptyCtx" {
 		return

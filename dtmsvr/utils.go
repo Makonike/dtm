@@ -68,7 +68,7 @@ type cancelCtx struct {
 }
 
 type timerCtx struct {
-	cancelCtx cancelCtx
+	*cancelCtx
 }
 
 func (*timerCtx) Deadline() (deadline time.Time, ok bool) {
@@ -123,7 +123,14 @@ func getKeyValues(ctx context.Context, kv map[interface{}]interface{}) {
 	if valCtx.key != nil && valCtx.value != nil && rtType == "*context.valueCtx" {
 		kv[valCtx.key] = valCtx.value
 	}
+
 	if rtType == "*context.timerCtx" {
+		a := reflect.ValueOf(ictx.data)
+		if a.Kind() != reflect.Uintptr {
+			tCtx := (*cancelCtx)(unsafe.Pointer(ictx.data))
+			getKeyValues(tCtx.Context, kv)
+			return
+		}
 		tCtx := (*timerCtx)(unsafe.Pointer(ictx.data))
 		getKeyValues(tCtx.cancelCtx, kv)
 		return

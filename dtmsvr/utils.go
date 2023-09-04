@@ -101,12 +101,7 @@ func getKeyValues(ctx context.Context, kv map[interface{}]interface{}) {
 	}
 	if rtType == "*context.timerCtx" {
 		tCtx := (*timerCtx)(unsafe.Pointer(ictx.data))
-		if tCtx.cancelCtx != nil && reflect.ValueOf(tCtx.cancelCtx).IsValid() {
-			getKeyValues(tCtx.cancelCtx, kv)
-			return
-		}
-		cCtx := (*cancelCtx)(unsafe.Pointer(ictx.data))
-		getKeyValues(cCtx.Context, kv)
+		getKeyValues(tCtx.cancelCtx, kv)
 		return
 	}
 	getKeyValues(valCtx.Context, kv)

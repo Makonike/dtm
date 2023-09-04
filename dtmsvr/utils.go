@@ -9,15 +9,14 @@ package dtmsvr
 import (
 	"context"
 	"fmt"
-	"reflect"
-	"time"
-	"unsafe"
-
 	"github.com/dtm-labs/dtm/client/dtmcli/dtmimp"
 	"github.com/dtm-labs/dtm/dtmsvr/config"
 	"github.com/dtm-labs/dtm/dtmsvr/storage"
 	"github.com/dtm-labs/dtm/dtmsvr/storage/registry"
 	"github.com/lithammer/shortuuid/v3"
+	"reflect"
+	"time"
+	"unsafe"
 )
 
 type branchStatus struct {
@@ -100,8 +99,12 @@ func getKeyValues(ctx context.Context, kv map[interface{}]interface{}) {
 		kv[valCtx.key] = valCtx.value
 	}
 	if rtType == "*context.timerCtx" {
-		tCtx := (*timerCtx)(unsafe.Pointer(ictx.data))
-		getKeyValues(tCtx.cancelCtx, kv)
+		tCtxPtr := (*timerCtx)(unsafe.Pointer(ictx.data))
+		if tCtxPtr.cancelCtx != nil {
+			getKeyValues(tCtxPtr.cancelCtx, kv)
+		} else if tCtxVal, ok := ctx.(timerCtx); ok {
+			getKeyValues(tCtxVal.cancelCtx, kv)
+		}
 		return
 	}
 	getKeyValues(valCtx.Context, kv)

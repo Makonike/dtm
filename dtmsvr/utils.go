@@ -68,7 +68,7 @@ type cancelCtx struct {
 }
 
 type timerCtx struct {
-	cancelCtx *cancelCtx
+	cancelCtx cancelCtx
 }
 
 func (*timerCtx) Deadline() (deadline time.Time, ok bool) {

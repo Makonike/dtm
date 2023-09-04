@@ -68,23 +68,7 @@ type cancelCtx struct {
 }
 
 type timerCtx struct {
-	cancelCtx *cancelCtx
-}
-
-func (*timerCtx) Deadline() (deadline time.Time, ok bool) {
-	return
-}
-
-func (*timerCtx) Done() <-chan struct{} {
-	return nil
-}
-
-func (*timerCtx) Err() error {
-	return nil
-}
-
-func (*timerCtx) Value(key any) any {
-	return nil
+	*cancelCtx
 }
 
 // CopyContext copy context with value and grpc metadata
@@ -122,7 +106,7 @@ func getKeyValues(ctx context.Context, kv map[interface{}]interface{}) {
 			return
 		}
 		cCtx := (*cancelCtx)(unsafe.Pointer(ictx.data))
-		getKeyValues(cCtx, kv)
+		getKeyValues(cCtx.Context, kv)
 		return
 	}
 	getKeyValues(valCtx.Context, kv)

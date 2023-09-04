@@ -67,7 +67,7 @@ type cancelCtx struct {
 }
 
 type timerCtx struct {
-	*cancelCtx
+	cancelCtx
 }
 
 // CopyContext copy context with value and grpc metadata
@@ -100,11 +100,7 @@ func getKeyValues(ctx context.Context, kv map[interface{}]interface{}) {
 	}
 	if rtType == "*context.timerCtx" {
 		tCtxPtr := (*timerCtx)(unsafe.Pointer(ictx.data))
-		if tCtxPtr.cancelCtx != nil {
-			getKeyValues(tCtxPtr.cancelCtx, kv)
-		} else if tCtxVal, ok := ctx.(timerCtx); ok {
-			getKeyValues(tCtxVal.cancelCtx, kv)
-		}
+		getKeyValues(tCtxPtr.cancelCtx, kv)
 		return
 	}
 	getKeyValues(valCtx.Context, kv)
